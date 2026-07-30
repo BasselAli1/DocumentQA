@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Local RAG</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 16px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.4rem; }
+  section {
+    border: 1px solid #8884;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  input[type="file"], textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #8886;
+    font-family: inherit;
+    font-size: 1rem;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .checkbox-row label { margin: 0; font-weight: normal; }
+  #status, #answerBox { white-space: pre-wrap; margin-top: 12px; }
+  #status { font-size: 0.9rem; color: #666; }
+  #answerBox {
+    min-height: 60px;
+    border: 1px solid #8884;
+    border-radius: 6px;
+    padding: 12px;
+    background: transparent;
+  }
+</style>
+</head>
+<body>
+
+<h1>📄 Local RAG</h1>
+
+<section>
+  <label for="fileInput">1. Upload a document</label>
+  <input id="fileInput" type="file" accept=".pdf,.docx,.html,.htm,.txt,.md" />
+  <div class="checkbox-row">
+    <input id="resetCheckbox" type="checkbox" />
+    <label for="resetCheckbox">Clear existing index first (replace, don't add)</label>
+  </div>
+  <button id="uploadBtn">Upload &amp; Index</button>
+  <div id="uploadStatus"></div>
+</section>
+
+<section>
+  <label for="questionInput">2. Ask a question about it</label>
+  <textarea id="questionInput" placeholder="What is this document about?"></textarea>
+  <button id="askBtn">Ask</button>
+  <div id="status"></div>
+  <div id="answerBox"></div>
+</section>
+
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const resetCheckbox = document.getElementById("resetCheckbox");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const uploadStatus = document.getElementById("uploadStatus");
+
+  const questionInput = document.getElementById("questionInput");
+  const askBtn = document.getElementById("askBtn");
+  const statusEl = document.getElementById("status");
+  const answerBox = document.getElementById("answerBox");
+
+  uploadBtn.addEventListener("click", async () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      uploadStatus.textContent = "Choose a file first.";
+      return;
+    }
+    uploadBtn.disabled = true;
+    uploadStatus.textContent = "Uploading and indexing...";
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("reset", resetCheckbox.checked);
+
+    try {
+      const res = await fetch("/api/documents", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Upload failed");
+      uploadStatus.textContent = `Indexed ${data.chunks_indexed} chunk(s) from "${data.filename}".`;
+    } catch (err) {
+      uploadStatus.textContent = "Error: " + err.message;
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
+
+  askBtn.addEventListener("click", async () => {
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    askBtn.disabled = true;
+    answerBox.textContent = "";
+    statusEl.textContent = "Thinking...";
+
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "Request failed");
+      }
+
+      statusEl.textContent = "";
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const events = buffer.split("\n\n");
+        buffer = events.pop(); // last chunk may be incomplete
+
+        for (const raw of events) {
+          const line = raw.trim();
+          if (!line.startsWith("data:")) continue;
+          const jsonStr = line.slice("data:".length).trim();
+          if (!jsonStr) continue;
+          const payload = JSON.parse(jsonStr);
+          if (payload.token) answerBox.textContent += payload.token;
+          if (payload.error) answerBox.textContent += `\n[error: ${payload.error}]`;
+        }
+      }
+    } catch (err) {
+      statusEl.textContent = "Error: " + err.message;
+    } finally {
+      askBtn.disabled = false;
+    }
+  });
+
+  questionInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      askBtn.click();
+    }
+  });
+</script>
+
+</body>
+</html>

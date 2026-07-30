@@ -14,7 +14,7 @@ authors = [
 ]
 dependencies = [
   "beautifulsoup4>=4.12.3",
-  "fastapi>=0.115.0",
+  "fastapi[standard]>=0.115.0",
   "langchain>=1.0.0",
   "langchain-chroma>=0.1.4",
   "langchain-core>=0.3.0",

@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from langchain_ollama_rag.app import ask, retrieve
-from langchain_ollama_rag.config import Settings
-from langchain_ollama_rag.indexing import index_source, index_uploaded_file
+from langchain_openai_rag.app import ask, retrieve
+from langchain_openai_rag.config import Settings
+from langchain_openai_rag.indexing import index_source, index_uploaded_file
 
 
 def build_parser() -> argparse.ArgumentParser:

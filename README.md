@@ -1,8 +1,8 @@
-# DocumentQA (LangChain Ollama RAG)
+# DocumentQA (LangChain RAG)
 
 A Retrieval-Augmented Generation (RAG) service for asking questions over your own documents. Upload a PDF, DOCX, HTML, TXT, or Markdown file, and ask questions about it through a web UI, a REST API, or a CLI. Answers stream back token by token and are grounded in the retrieved chunks, with every Q&A logged to Postgres.
 
-It can run fully **offline** with local [Ollama](https://ollama.com) models, or **online** using [OpenRouter](https://openrouter.ai) for chat and NVIDIA NIM embeddings — controlled by a single `MODE` setting.
+Chat and embeddings are both served by [OpenAI](https://platform.openai.com).
 
 ## Features
 
@@ -12,7 +12,6 @@ It can run fully **offline** with local [Ollama](https://ollama.com) models, or 
 - **Streaming answers** — Server-Sent Events (SSE) endpoint streams tokens as they're generated.
 - **Q&A logging** — every question, answer, and the chunks used to answer it are persisted to Postgres.
 - **Web UI, REST API, and CLI** — use whichever fits your workflow.
-- **Local or cloud models** — swap between Ollama (offline) and OpenRouter/NVIDIA (online) via one environment variable.
 
 ## Architecture
 
@@ -28,9 +27,7 @@ CLI (cli.py) drives the same app.py / indexing.py functions for headless use.
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/) (recommended) or `pip`
 - A running Postgres instance (used to log Q&A history)
-- Either:
-  - [Ollama](https://ollama.com) running locally with a chat model and an embedding model pulled, **or**
-  - An [OpenRouter](https://openrouter.ai) API key (for chat) and NVIDIA NIM access (for embeddings) for online mode
+- An [OpenAI](https://platform.openai.com) API key (used for both chat and embeddings)
 
 ## Setup
 
@@ -51,29 +48,11 @@ CLI (cli.py) drives the same app.py / indexing.py functions for headless use.
    Create a `.env` file in the project root (see [Configuration](#configuration) below for all options):
 
    ```bash
-   # Choose "offline" (Ollama) or "online" (OpenRouter + NVIDIA embeddings)
-   MODE=offline
+   OPENAI_API_KEY=
+   OPENAI_MODEL=gpt-5.6-luna
+   OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
-   # Offline mode (Ollama)
-   OLLAMA_CHAT_MODEL=llama3.2:1b
-   OLLAMA_EMBEDDING_MODEL=snowflake-arctic-embed:22m
-   OLLAMA_BASE_URL=http://127.0.0.1:11434
-
-   # Online mode (OpenRouter + NVIDIA)
-   OPENROUTER_API_KEY=
-   OPENROUTER_CHAT_MODEL=
-   OPENROUTER_EMBEDDING_MODEL=
-   OPENROUTER_BASE_URL=
-
-   # Required in both modes
    DATABASE_URL=postgresql://rag:rag@localhost:5432/rag
-   ```
-
-3. **If running offline**, make sure Ollama is running and the models are pulled:
-
-   ```bash
-   ollama pull llama3.2:1b
-   ollama pull snowflake-arctic-embed:22m
    ```
 
 ## Running
@@ -86,7 +65,7 @@ Spins up the app and a Postgres database together:
 docker compose up --build
 ```
 
-The app is available at [http://localhost:8000](http://localhost:8000). By default `docker-compose.yml` is configured for offline mode against `host.docker.internal:11434` — update the `environment` block for online mode instead.
+The app is available at [http://localhost:8000](http://localhost:8000). Set `OPENAI_API_KEY` in your shell (or an `.env` file Compose picks up) before running this — `docker-compose.yml` passes it through via `${OPENAI_API_KEY}`.
 
 ### Locally
 
@@ -99,7 +78,7 @@ uv run rag-api
 or directly with uvicorn (with autoreload):
 
 ```bash
-uv run uvicorn langchain_ollama_rag.api:app --reload
+uv run uvicorn langchain_openai_rag.api:app --reload
 ```
 
 Open [http://localhost:8000](http://localhost:8000) to use the web UI.
@@ -153,18 +132,13 @@ uv run rag retrieve "search query"
 
 ## Configuration
 
-All settings are read from environment variables (loaded from `.env` via `python-dotenv`), defined in [`config.py`](src/langchain_ollama_rag/config.py):
+All settings are read from environment variables (loaded from `.env` via `python-dotenv`), defined in [`config.py`](src/langchain_openai_rag/config.py):
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `MODE` | `online` | `online` uses OpenRouter/NVIDIA; anything else uses local Ollama. |
-| `OLLAMA_CHAT_MODEL` | `llama3.2:1b` | Ollama chat model name (offline mode). |
-| `OLLAMA_EMBEDDING_MODEL` | `snowflake-arctic-embed:22m` | Ollama embedding model name (offline mode). |
-| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Ollama server URL. |
-| `OPENROUTER_CHAT_MODEL` | _(empty)_ | Chat model name for OpenRouter (online mode). |
-| `OPENROUTER_EMBEDDING_MODEL` | _(empty)_ | Embedding model name for NVIDIA NIM (online mode). |
-| `OPENROUTER_API_KEY` | _(empty)_ | API key for OpenRouter / NVIDIA endpoints. |
-| `OPENROUTER_BASE_URL` | _(empty)_ | Optional override for the OpenRouter base URL. |
+| `OPENAI_MODEL` | `gpt-5.6-luna` | OpenAI chat model name. |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model name. |
+| `OPENAI_API_KEY` | _(empty)_ | API key for OpenAI. |
 | `DATABASE_URL` | _(empty)_ | Postgres connection string used to log Q&A history. |
 | `RAG_COLLECTION_NAME` | `rag_tutorial` | Chroma collection name. |
 | `RAG_PERSIST_DIR` | `.rag/chroma` | Directory where the Chroma index is persisted. |
@@ -177,7 +151,7 @@ All settings are read from environment variables (loaded from `.env` via `python
 ## Project structure
 
 ```
-src/langchain_ollama_rag/
+src/langchain_openai_rag/
 ├── api.py            FastAPI app: upload, ask (SSE), serves the web UI
 ├── app.py             Agent/chain construction, ask/ask_stream/retrieve logic
 ├── cli.py             `rag index|ask|retrieve` command-line entry point

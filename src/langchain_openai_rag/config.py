@@ -13,20 +13,16 @@ except ImportError:
 
 DEFAULT_SOURCE_URL = "https://lilianweng.github.io/posts/2023-06-23-agent/"
 
-# Extensions we know how to parse when a user uploads a document.
+# Kept as a tuple (not a set) so the error message in api.py/loaders.py can
+# join it in a stable, predictable order.
 SUPPORTED_UPLOAD_EXTENSIONS = (".pdf", ".docx", ".html", ".htm", ".txt", ".md")
 
 
 @dataclass(frozen=True)
 class Settings:
-    chat_model: str
-    embedding_model: str
-    online_chat_model: str
-    online_embedding_model: str
-    api_key: str
-    mode: str
-    ollama_base_url: str
-    openrouter_base_url: str
+    openai_chat_model: str
+    openai_embedding_model: str
+    openai_api_key: str
     collection_name: str
     persist_dir: Path
     upload_dir: Path
@@ -35,20 +31,14 @@ class Settings:
     chunk_size: int
     chunk_overlap: int
     retrieval_k: int
-    
 
     @classmethod
     def from_env(cls) -> Settings:
         load_dotenv(override=False)
         return cls(
-            chat_model=os.getenv("OLLAMA_CHAT_MODEL", "llama3.2:1b"),
-            embedding_model=os.getenv("OLLAMA_EMBEDDING_MODEL", "snowflake-arctic-embed:22m"),
-            online_chat_model=os.getenv("OPENROUTER_CHAT_MODEL", ""),
-            online_embedding_model=os.getenv("OPENROUTER_EMBEDDING_MODEL", ""), 
-            api_key=os.getenv("OPENROUTER_API_KEY", ""), 
-            mode=os.getenv("MODE", "online"),        
-            ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
-            openrouter_base_url=os.getenv("OPENROUTER_BASE_URL", ""),
+            openai_chat_model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"),
+            openai_embedding_model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
             collection_name=os.getenv("RAG_COLLECTION_NAME", "rag_tutorial"),
             persist_dir=Path(os.getenv("RAG_PERSIST_DIR", ".rag/chroma")),
             upload_dir=Path(os.getenv("RAG_UPLOAD_DIR", ".rag/uploads")),
@@ -57,7 +47,6 @@ class Settings:
             chunk_size=_get_positive_int("RAG_CHUNK_SIZE", 1000),
             chunk_overlap=_get_non_negative_int("RAG_CHUNK_OVERLAP", 200),
             retrieval_k=_get_positive_int("RAG_RETRIEVAL_K", 4),
-
         )
 
 

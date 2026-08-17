@@ -6,7 +6,7 @@ Usage:
        or anywhere on your PYTHONPATH alongside the installed package.
     2. Make sure you've already indexed at least one document (via the UI,
        `rag index <path>`, or the /api/documents endpoint).
-    3. Make sure Ollama is running and reachable (OLLAMA_BASE_URL).
+    3. Make sure OPENAI_API_KEY is set (in your .env or the shell environment).
     4. Run:
          python debug_stream.py
          python debug_stream.py "What is this document about?"
@@ -17,8 +17,8 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from langchain_ollama_rag.app import create_rag_chain
-from langchain_ollama_rag.config import Settings
+from langchain_openai_rag.app import create_rag_chain
+from langchain_openai_rag.config import Settings
 
 SEPARATOR = "-" * 60
 

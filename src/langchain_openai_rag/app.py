@@ -7,30 +7,21 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, AgentState
 from langchain.tools import tool
 from langchain_core.documents import Document
-from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 
-from langchain_ollama_rag.config import Settings
-from langchain_ollama_rag.db import log_question_answer
-from langchain_ollama_rag.indexing import get_vector_store
+from langchain_openai_rag.config import Settings
+from langchain_openai_rag.db import log_question_answer
+from langchain_openai_rag.indexing import get_vector_store
 
 Mode = Literal["agent", "chain"]
 
 
-def create_chat_model(settings: Settings):
-    if settings.mode == "online":
-        from langchain_openrouter import ChatOpenRouter
-        return ChatOpenRouter(
-            model=settings.online_chat_model,
-            base_url="https://openrouter.ai/api/v1",
-            api_key=settings.api_key,
-            temperature=0,
-        )
-    else:
-        return ChatOllama(
-            model=settings.chat_model,
-            base_url=settings.ollama_base_url,
-            temperature=0,
-        )
+def create_chat_model(settings: Settings) -> ChatOpenAI:
+    return ChatOpenAI(
+        model=settings.openai_chat_model,
+        api_key=settings.openai_api_key,
+        temperature=0,
+    )
 
 
 def create_rag_agent(settings: Settings):

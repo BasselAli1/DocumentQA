@@ -9,17 +9,17 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from langchain_ollama_rag.app import ask_stream
-from langchain_ollama_rag.config import SUPPORTED_UPLOAD_EXTENSIONS, Settings
-from langchain_ollama_rag.indexing import index_uploaded_file
+from langchain_openai_rag.app import ask_stream
+from langchain_openai_rag.config import SUPPORTED_UPLOAD_EXTENSIONS, Settings
+from langchain_openai_rag.indexing import index_uploaded_file
 
 settings = Settings.from_env()
 
-# src/langchain_ollama_rag/api.py -> parents[2] is the project root, where the
+# src/langchain_openai_rag/api.py -> parents[2] is the project root, where the
 # `static/` folder lives alongside `src/` (see Dockerfile).
 STATIC_DIR = Path(__file__).resolve().parents[2] / "static"
 
-app = FastAPI(title="LangChain Ollama RAG")
+app = FastAPI(title="LangChain RAG")
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -92,7 +92,7 @@ async def ask_endpoint(payload: AskRequest):
 def main() -> None:
     import uvicorn
 
-    uvicorn.run("langchain_ollama_rag.api:app", host="0.0.0.0", port=8000)
+    uvicorn.run("langchain_openai_rag.api:app", host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":

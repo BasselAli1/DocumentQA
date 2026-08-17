@@ -6,27 +6,18 @@ from pathlib import Path
 
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from langchain_ollama_rag.config import Settings
-from langchain_ollama_rag.loaders import load_tutorial_source, load_uploaded_document
+from langchain_openai_rag.config import Settings
+from langchain_openai_rag.loaders import load_tutorial_source, load_uploaded_document
 
 
-def create_embeddings(settings: Settings):
-    if settings.mode == "online":
-        from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
-        return NVIDIAEmbeddings(
-            model=settings.online_embedding_model,
-            base_url="https://openrouter.ai/api/v1",
-            api_key=settings.api_key,
-        )
-    else:       
-        from langchain_ollama import OllamaEmbeddings
-
-        return OllamaEmbeddings(
-            model=settings.embedding_model,
-            base_url=settings.ollama_base_url,
-        )
+def create_embeddings(settings: Settings) -> OpenAIEmbeddings:
+    return OpenAIEmbeddings(
+        model=settings.openai_embedding_model,
+        api_key=settings.openai_api_key,
+    )
 
 
 def get_vector_store(settings: Settings) -> Chroma:

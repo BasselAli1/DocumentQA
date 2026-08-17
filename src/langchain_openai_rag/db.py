@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
 
 from langchain_core.documents import Document
-from langchain_ollama_rag.config import Settings
+from langchain_openai_rag.config import Settings
 
 _metadata = MetaData()
 

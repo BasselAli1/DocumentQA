@@ -6,12 +6,12 @@ Chat and embeddings are both served by [OpenAI](https://platform.openai.com).
 
 ## Features
 
-- **Document ingestion** — index `.pdf`, `.docx`, `.html`/`.htm`, `.txt`, `.md` files, or a demo web article, with automatic chunking and embedding.
-- **Vector search** — [Chroma](https://www.trychroma.com/) as the vector store, persisted to disk.
-- **Two answering strategies** — `agent` mode (the model decides when to call a retrieval tool) and `chain` mode (retrieval always runs before the model responds).
-- **Streaming answers** — Server-Sent Events (SSE) endpoint streams tokens as they're generated.
-- **Q&A logging** — every question, answer, and the chunks used to answer it are persisted to Postgres.
-- **Web UI, REST API, and CLI** — use whichever fits your workflow.
+- **Document ingestion**: index `.pdf`, `.docx`, `.html`/`.htm`, `.txt`, `.md` files, or a demo web article, with automatic chunking and embedding.
+- **Vector search**: [Chroma](https://www.trychroma.com/) as the vector store, persisted to disk.
+- **Two answering strategies**: `agent` mode (the model decides when to call a retrieval tool) and `chain` mode (retrieval always runs before the model responds).
+- **Streaming answers**: Server-Sent Events (SSE) endpoint streams tokens as they're generated.
+- **Q&A logging**: every question, answer, and the chunks used to answer it are persisted to Postgres.
+- **Web UI, REST API, and CLI**: use whichever fits your workflow.
 
 ## Architecture
 
@@ -65,7 +65,7 @@ Spins up the app and a Postgres database together:
 docker compose up --build
 ```
 
-The app is available at [http://localhost:8000](http://localhost:8000). Set `OPENAI_API_KEY` in your shell (or an `.env` file Compose picks up) before running this — `docker-compose.yml` passes it through via `${OPENAI_API_KEY}`.
+The app is available at [http://localhost:8000](http://localhost:8000). Set `OPENAI_API_KEY` in your shell (or an `.env` file Compose picks up) before running this. `docker-compose.yml` passes it through via `${OPENAI_API_KEY}`.
 
 ### Locally
 
@@ -99,7 +99,7 @@ curl -X POST http://localhost:8000/api/documents \
   -F "reset=true"
 ```
 
-`reset=true` (default) clears the existing index before adding the new document; set it to `false` to add to the existing index instead.
+`reset=true` (default) clears the existing index before adding the new document. Set it to `false` to add to the existing index instead.
 
 **Ask a question (streams Server-Sent Events)**
 

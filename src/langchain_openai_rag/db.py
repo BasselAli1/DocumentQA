@@ -3,11 +3,22 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import Column, MetaData, String, Table, Text, TIMESTAMP, create_engine, insert, select, text
+from langchain_core.documents import Document
+from sqlalchemy import (
+    TIMESTAMP,
+    Column,
+    MetaData,
+    String,
+    Table,
+    Text,
+    create_engine,
+    insert,
+    select,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
 
-from langchain_core.documents import Document
 from langchain_openai_rag.config import Settings
 
 _metadata = MetaData()

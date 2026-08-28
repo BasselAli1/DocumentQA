@@ -39,7 +39,7 @@ class Settings:
             openai_chat_model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna"),
             openai_embedding_model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
             openai_api_key=os.getenv("OPENAI_API_KEY", ""),
-            collection_name=os.getenv("RAG_COLLECTION_NAME", "rag_tutorial"),
+            collection_name=os.getenv("RAG_COLLECTION_NAME", "documentqa"),
             persist_dir=Path(os.getenv("RAG_PERSIST_DIR", ".rag/chroma")),
             upload_dir=Path(os.getenv("RAG_UPLOAD_DIR", ".rag/uploads")),
             source_url=os.getenv("RAG_SOURCE_URL", DEFAULT_SOURCE_URL),

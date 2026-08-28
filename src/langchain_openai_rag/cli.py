@@ -20,13 +20,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to a local file (.pdf, .docx, .html, .txt, .md). "
         "If omitted, indexes the built-in demo article instead.",
     )
-    index_parser.add_argument("--reset", action="store_true", help="Clear the existing index first.")
+    index_parser.add_argument(
+        "--reset", action="store_true", help="Clear the existing index first."
+    )
 
     ask_parser = subparsers.add_parser("ask", help="Ask a question against the indexed documents.")
     ask_parser.add_argument("question")
     ask_parser.add_argument("--mode", choices=["agent", "chain"], default="chain")
 
-    retrieve_parser = subparsers.add_parser("retrieve", help="Show raw retrieved chunks for a query.")
+    retrieve_parser = subparsers.add_parser(
+        "retrieve", help="Show raw retrieved chunks for a query."
+    )
     retrieve_parser.add_argument("query")
 
     return parser

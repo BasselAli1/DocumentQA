@@ -20,8 +20,8 @@ def load_web_page(url: str, *, content_classes: tuple[str, ...] | None = None) -
     return [Document(page_content=text, metadata={"source": url})]
 
 
-def load_tutorial_source(url: str) -> list[Document]:
-    """Load the Lilian Weng article using the same content classes as the tutorial."""
+def load_demo_article(url: str) -> list[Document]:
+    """Load the built-in demo article, scoping to the blog's main content classes."""
     return load_web_page(
         url,
         content_classes=("post-title", "post-header", "post-content"),

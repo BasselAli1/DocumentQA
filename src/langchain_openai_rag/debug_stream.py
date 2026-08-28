@@ -83,7 +83,7 @@ async def show_messages(agent, question: str) -> None:
     print(f"\n{SEPARATOR}\nstream_mode='messages'  (token-by-token)\n{SEPARATOR}")
     token_count = 0
     buffer = ""
-    async for chunk, metadata in agent.astream(
+    async for chunk, _metadata in agent.astream(
         {"messages": [{"role": "user", "content": question}]},
         stream_mode="messages",
     ):

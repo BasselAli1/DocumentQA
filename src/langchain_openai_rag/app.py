@@ -101,7 +101,9 @@ def ask(question: str, settings: Settings, *, mode: Mode = "agent") -> str:
     return answer
 
 
-async def ask_stream(question: str, settings: Settings, *, mode: Mode = "chain") -> AsyncIterator[str]:
+async def ask_stream(
+    question: str, settings: Settings, *, mode: Mode = "chain"
+) -> AsyncIterator[str]:
     """Stream the answer token by token, for either agent or chain mode.
 
     Once the stream finishes, the full answer and any retrieved sources are

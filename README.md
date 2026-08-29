@@ -1,5 +1,7 @@
 # DocumentQA (LangChain RAG)
 
+[![CI](https://github.com/BasselAli1/DocumentQA/actions/workflows/ci.yml/badge.svg)](https://github.com/BasselAli1/DocumentQA/actions/workflows/ci.yml)
+
 A Retrieval-Augmented Generation (RAG) service for asking questions over your own documents. Upload a PDF, DOCX, HTML, TXT, or Markdown file, and ask questions about it through a web UI, a REST API, or a CLI. Answers stream back token by token and are grounded in the retrieved chunks, with every Q&A logged to Postgres.
 
 Chat and embeddings are both served by [OpenAI](https://platform.openai.com).
@@ -140,10 +142,10 @@ All settings are read from environment variables (loaded from `.env` via `python
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model name. |
 | `OPENAI_API_KEY` | _(empty)_ | API key for OpenAI. |
 | `DATABASE_URL` | _(empty)_ | Postgres connection string used to log Q&A history. |
-| `RAG_COLLECTION_NAME` | `rag_tutorial` | Chroma collection name. |
+| `RAG_COLLECTION_NAME` | `documentqa` | Chroma collection name. |
 | `RAG_PERSIST_DIR` | `.rag/chroma` | Directory where the Chroma index is persisted. |
 | `RAG_UPLOAD_DIR` | `.rag/uploads` | Directory for uploaded files (if retained). |
-| `RAG_SOURCE_URL` | Lilian Weng's agents post | Demo article used when indexing without a file. |
+| `RAG_SOURCE_URL` | _(built-in demo article)_ | Web article indexed when running `index` without a file. |
 | `RAG_CHUNK_SIZE` | `1000` | Character length of each document chunk. |
 | `RAG_CHUNK_OVERLAP` | `200` | Character overlap between consecutive chunks. |
 | `RAG_RETRIEVAL_K` | `4` | Number of chunks retrieved per query. |
@@ -160,6 +162,8 @@ src/langchain_openai_rag/
 ├── indexing.py         Chunking, embedding, and Chroma vector store management
 └── loaders.py           Document loaders for PDF, DOCX, HTML, TXT/MD, and web pages
 static/index.html      Web UI
+tests/                 Offline pytest suite
+.github/workflows/ci.yml   Lint + test + Docker build pipeline
 Dockerfile, docker-compose.yml, docker-entrypoint.sh   Containerized deployment
 ```
 
@@ -175,6 +179,12 @@ uv run ruff check .
 # Run tests
 uv run pytest
 ```
+
+Tests live in [`tests/`](tests/) and cover configuration parsing, document
+loaders, chunking/IDs, the CLI parser, and Q&A logging. They use no network,
+OpenAI, or Postgres access, so they run offline. Lint and tests (Python 3.11
+and 3.12) plus a Docker image build run in CI on every push and pull request
+via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## License
 

@@ -167,24 +167,30 @@ tests/                 Offline pytest suite
 Dockerfile, docker-compose.yml, docker-entrypoint.sh   Containerized deployment
 ```
 
-## Development
+## Testing
 
 ```bash
-# Install dev dependencies (pytest, ruff)
-uv sync --extra dev
-
-# Lint
+uv sync --extra dev      # installs pytest + ruff
 uv run ruff check .
-
-# Run tests
-uv run pytest
+uv run pytest            # 31 tests, no network / OpenAI / Postgres needed
 ```
 
-Tests live in [`tests/`](tests/) and cover configuration parsing, document
-loaders, chunking/IDs, the CLI parser, and Q&A logging. They use no network,
-OpenAI, or Postgres access, so they run offline. Lint and tests (Python 3.11
-and 3.12) plus a Docker image build run in CI on every push and pull request
-via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+The suite runs fully offline, using temp files and hand-built `Settings`:
+
+- `test_config.py`: environment parsing, the documented defaults, and the
+  positive / non-negative integer validation for chunk size and overlap.
+- `test_loaders.py`: per-type document loading (`.txt`, `.md`, `.html`),
+  HTML markup stripping, and the unsupported-type and empty-file errors.
+- `test_indexing.py`: deterministic chunk IDs (stable across re-indexing)
+  and `chunk_size` / `chunk_overlap` splitting behaviour.
+- `test_cli.py`: the `index` / `ask` / `retrieve` argument parser.
+- `test_db.py`: retrieved-chunk serialization, and that logging is a no-op
+  when `DATABASE_URL` is unset.
+- `test_app.py`: context serialization passed to the model.
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs ruff and
+these tests on Python 3.11 and 3.12, then builds the Docker image, on every
+push and pull request.
 
 ## License
 

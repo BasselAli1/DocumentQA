@@ -10,7 +10,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_openai_rag.config import Settings
-from langchain_openai_rag.loaders import load_tutorial_source, load_uploaded_document
+from langchain_openai_rag.loaders import load_demo_article, load_uploaded_document
 
 
 def create_embeddings(settings: Settings) -> OpenAIEmbeddings:
@@ -62,8 +62,8 @@ def index_uploaded_file(
 
 
 def index_source(settings: Settings, *, reset: bool = True) -> int:
-    """Kept for convenience/demo purposes: indexes the original tutorial web page."""
-    documents = load_tutorial_source(settings.source_url)
+    """Kept for convenience/demo purposes: indexes the built-in demo web article."""
+    documents = load_demo_article(settings.source_url)
     return index_documents(documents, settings, reset=reset)
 
 
